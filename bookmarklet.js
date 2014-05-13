@@ -76,11 +76,14 @@ function populateTwitterFeed() {
 			var tweetActions = tweetContentNode.getElementsByClassName("tweet-actions").item(0);
 			tweetActions.innerHTML = elements + tweetActions.innerHTML;
 
-			// Traverse to dd the event listeners.
+			// Traverse to add the event listeners for when a vote is cast.
 			for (var i = 0; i < 2; i++) {
 				var voteLink = tweetActions.children.item(i).children.item(0);
 				voteLink.addEventListener("click", processFeedback);
 			}
+
+			// TODO: Run the element through the self-organizing map and change its background.
+			if (Math.random() > 0.5) listElementNode.style.backgroundColor = "rgb(245, 255, 239)";
 		}
 	}
 }
