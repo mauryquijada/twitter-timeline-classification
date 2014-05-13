@@ -1,12 +1,26 @@
 // Inspiration from http://ravikiranj.net/drupal/201205/code/machine-learning/how-build-twitter-sentiment-analyzer
 
-// http://github.com/ravikiranj/twitter-sentiment-analyzer/blob/master/data/feature_list/stopwords.txt
+function parseTweet (tweet) {
+	// Apply pre-processing to the tweet.
+	// -- Replace hashtags with their word representation (they give useful info).
+	tweet = tweet.replace(/#([^\s]+)/g, "$1");
 
-var tweet = "exampleTweet"
-
-// Apply pre-processing to the tweet.
-
-// Convert to lowercase, remove length, 
+	// -- Remove additional whitespace.
+	tweet = tweet.replace(/[\s]+/, " ");
 
 
-// Only consider unigrams
+
+	// -- Remove links and the description text.
+
+
+	// -- Convert to lowercase.
+	tweet.toLowerCase();
+
+	// -- Eliminate stop words.
+
+
+	// Only consider unigrams
+
+	return tweet;
+}
+
