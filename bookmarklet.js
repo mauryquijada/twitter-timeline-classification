@@ -1,3 +1,6 @@
+// Initialize configuration variables.
+var SERVER = "https://127.0.0.1:1337";
+
 // Insert the glyphicons stylesheet.
 var head = document.getElementsByTagName("head")[0];
 var link = document.createElement("link");
@@ -8,8 +11,9 @@ link.href = "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css";
 link.media = "all";
 head.appendChild(link);
 
-function processFeedback(obj) {
-    var target = obj.target;
+function processFeedback (obj, tweet) {
+    var target = obj;
+    alert(target);
 
     // Decide what to do depending on whether the icon or link was clicked.
     if (target.nodeName == "B") {
@@ -35,60 +39,79 @@ function processFeedback(obj) {
         alert("You've already cast your vote!");
     }
 
-    // TODO: Send to server.
+    // Otherwise, send it to the server and change the indication when we receive
+    // a good response.
+    var request = new XMLHttpRequest();
+    request.open("POST", SERVER + "/map", true);
+    request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    request.send("data=" + encodeURIComponent(JSON.stringify(tweet)));
+    request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+             icon.className = newClass;
+        } else {
+            icon.className = "fa fa-frown-o";
+        }
+    }
+    request.send();
     
     return false;
 }
 
-function populateTwitterFeed() {
-	// Create the new li elements that contain our upvote-downvote code.
-	var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
+function populateTwitterFeed () {
+    // Create the new li elements that contain our upvote-downvote code.
+    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
 
-	// Prepare to iterate.
-	var streamItems = document.getElementById("stream-items-id");
-	var tweets = [];
+    // Prepare to iterate.
+    var streamItems = document.getElementById("stream-items-id");
+    var tweets = [];
 
-	// Loop through each of the tweets displayed and display relevant information.
-	for (var i = 0; i < streamItems.children.length; i++) {
-		var listElementNode = streamItems.children.item(i);
+    // Loop through each of the tweets displayed and display relevant information.
+    for (var i = 0; i < streamItems.children.length; i++) {
+        var listElementNode = streamItems.children.item(i);
 
-		// If we haven't already marked it...
-		if (!listElementNode.hasAttribute("data-already-visited")) {
-			var tweet = {};
+        // If we haven't already marked it...
+        if (!listElementNode.hasAttribute("data-already-visited")) {
+            var tweet = {};
 
-			// First, mark the tweet as visited.
-			listElementNode.setAttribute("data-already-visited", "true");
+            // First, mark the tweet as visited.
+            listElementNode.setAttribute("data-already-visited", "true");
 
-			// Grab the Tweet ID.
-			tweet.id = listElementNode.getAttributeNode("data-item-id").value;
+            // Grab the Tweet ID.
+            tweet.id = listElementNode.getAttributeNode("data-item-id").value;
 
-			// Grab the Tweet text.
-			var tweetWrapperNode = listElementNode.getElementsByClassName("tweet").item(0);
-			var tweetContentNode = tweetWrapperNode.getElementsByClassName("content").item(0);
-			var tweetTextNode = tweetContentNode.getElementsByClassName("tweet-text").item(0);
-			var tweetText = tweetTextNode.innerHTML;
-			tweet.text = tweetText;
+            // Grab the Tweet text.
+            var tweetWrapperNode = listElementNode.getElementsByClassName("tweet").item(0);
+            var tweetContentNode = tweetWrapperNode.getElementsByClassName("content").item(0);
+            var tweetTextNode = tweetContentNode.getElementsByClassName("tweet-text").item(0);
+            var tweetText = tweetTextNode.innerHTML;
+            tweet.text = tweetText;
 
-			// Push it to the array that we have.
-			tweets.push(tweet);
+            // Push it to the array that we have.
+            tweets.push(tweet);
 
-			// Then, add the proper HTML.
-			var tweetActions = tweetContentNode.getElementsByClassName("tweet-actions").item(0);
-			tweetActions.innerHTML = elements + tweetActions.innerHTML;
+            // Then, add the proper HTML.
+            var tweetActions = tweetContentNode.getElementsByClassName("tweet-actions").item(0);
+            tweetActions.innerHTML = elements + tweetActions.innerHTML;
 
-			// Traverse to add the event listeners for when a vote is cast.
-			for (var i = 0; i < 2; i++) {
-				var voteLink = tweetActions.children.item(i).children.item(0);
-				voteLink.addEventListener("click", processFeedback);
-			}
+            // Traverse to add the event listeners for when a vote is cast.
+            for (var j = 0; j < 2; j++) {
+                // Use a self-invoking closure to ensure tweets refers to the proper last element.
+                (function () {
+                    var voteLink = tweetActions.children.item(j).children.item(0);
+                    var tweetToPass = JSON.stringify(tweets.slice(-1).pop());
+    voteLink.addEventListener("click", function() {
+                        processFeedback(this, tweetToPass);
+                    });
+                }())
+            }
 
-			// TODO: Run the element through the self-organizing map and change its background.
-			if (Math.random() > 0.5) listElementNode.style.backgroundColor = "rgb(245, 255, 239)";
-		}
-	}
+            // TODO: Run the element through the self-organizing map and change its background.
+            if (Math.random() > 0.5) listElementNode.style.backgroundColor = "rgb(245, 255, 239)";
+        }
+    }
 }
 
 // Every 2.5 seconds, loop through and make sure all tweets have that tag.
-window.setInterval(function() {
-	populateTwitterFeed();
+window.setInterval(function () {
+    populateTwitterFeed();
 }, 2500);
