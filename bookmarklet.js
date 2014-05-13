@@ -8,40 +8,41 @@ link.href = "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css";
 link.media = "all";
 head.appendChild(link);
 
+function processFeedback(obj) {
+    var target = obj.target;
+
+    // Decide what to do depending on whether the icon or link was clicked.
+    if (target.nodeName == "B") {
+        // Get the icon clicked on.
+        var icon = target.parentNode.children.item(0);
+    } else if (target.nodeName == "I") {
+        // Stay put.
+        var icon = target;
+    }
+
+    // Get the one we didn't click.
+    if (icon.className == "fa fa-thumbs-up") {
+        var otherIcon = target.parentNode.parentNode.nextSibling.firstChild.firstChild;
+    } else if (icon.className == "fa fa-thumbs-down") {
+        var otherIcon = target.parentNode.parentNode.previousSibling.firstChild.firstChild;
+    }
+
+    // Make the change only if we haven't seen a vote cast before.
+    var newClass = "fa fa-check";
+    if (icon.className != newClass && otherIcon.className != newClass) {
+        icon.className = newClass;
+    } else {
+        alert("You've already cast your vote!");
+    }
+
+    // TODO: Send to server.
+    
+    return false;
+}
+
 function populateTwitterFeed() {
-	// Create the new li element
-	var upvoteNode = document.createElement("li");
-	var downvoteNode = document.createElement("li");
-
-	var feedbackLink = document.createElement("a");
-	feedbackLink.setAttribute("role", "button");
-	feedbackLink.setAttribute("class", "with-icn js-tooltip");
-	feedbackLink.setAttribute("href", "#");
-
-	var upvoteStyle = document.createElement("b");
-	var upvoteText = document.createTextNode("Up");
-	var upvoteIcon = document.createElement("i");
-	upvoteIcon.setAttribute("class", "fa fa-thumbs-up");
-
-	var upvoteLink = feedbackLink.cloneNode();
-	upvoteStyle.appendChild(upvoteText);
-
-	upvoteLink.appendChild(upvoteIcon.cloneNode());
-	upvoteLink.appendChild(upvoteStyle);
-	upvoteNode.appendChild(upvoteLink);
-
-	var downvoteStyle = document.createElement("b");
-	var downvoteText = document.createTextNode("Down");
-	var downvoteIcon = document.createElement("i");
-	downvoteIcon.setAttribute("class", "fa fa-thumbs-down");
-
-	var downvoteLink = feedbackLink.cloneNode();
-	downvoteStyle.appendChild(downvoteText);
-
-	downvoteLink.appendChild(downvoteIcon.cloneNode());
-	downvoteLink.appendChild(downvoteStyle);
-	downvoteNode.appendChild(downvoteLink);
-
+	// Create the new li elements that contain our upvote-downvote code.
+	var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
 
 	// Prepare to iterate.
 	var streamItems = document.getElementById("stream-items-id");
@@ -51,7 +52,7 @@ function populateTwitterFeed() {
 	for (var i = 0; i < streamItems.children.length; i++) {
 		var listElementNode = streamItems.children.item(i);
 
-		// If we haven't already marked it.
+		// If we haven't already marked it...
 		if (!listElementNode.hasAttribute("data-already-visited")) {
 			var tweet = {};
 
@@ -71,50 +72,20 @@ function populateTwitterFeed() {
 			// Push it to the array that we have.
 			tweets.push(tweet);
 
-			// Then, add the proper interface.
+			// Then, add the proper HTML.
 			var tweetActions = tweetContentNode.getElementsByClassName("tweet-actions").item(0);
-			var upvoteNodeClone = upvoteNode.cloneNode(true);
-			var downvoteNodeClone = downvoteNode.cloneNode(true);
-			tweetActions.insertBefore(downvoteNodeClone, tweetActions.firstChild);
-			tweetActions.insertBefore(upvoteNodeClone, tweetActions.firstChild);
+			tweetActions.innerHTML = elements + tweetActions.innerHTML;
 
+			// Traverse to dd the event listeners.
+			for (var i = 0; i < 2; i++) {
+				var voteLink = tweetActions.children.item(i).children.item(0);
+				voteLink.addEventListener("click", processFeedback);
+			}
 		}
-		
 	}
 }
 
-var s_ajaxListener = {};
-s_ajaxListener.tempOpen = XMLHttpRequest.prototype.open;
-s_ajaxListener.tempSend = XMLHttpRequest.prototype.send;
-// callback will be invoked on readystatechange
-s_ajaxListener.callback = function () {
-	alert("HI");
-    // "this" will be the XHR object
-    // it will contain status and readystate
-    //return populateTwitterFeed();
-};
-
-XMLHttpRequest.prototype.open = function(a,b) {
-  if (!a) var a='';
-  if (!b) var b='';
-  s_ajaxListener.tempOpen.apply(this, arguments);
-  s_ajaxListener.method = a;  
-  s_ajaxListener.url = b;
-  if (a.toLowerCase() == 'get') {
-    s_ajaxListener.data = b.split('?');
-    s_ajaxListener.data = s_ajaxListener.data[1];
-  }
-};
-
-XMLHttpRequest.prototype.send = function(a,b) {
-  if (!a) var a='';
-  if (!b) var b='';
-  s_ajaxListener.tempSend.apply(this, arguments);
-  if(s_ajaxListener.method.toLowerCase() == 'post')s_ajaxListener.data = a;
-  // assigning callback to onreadystatechange
-  // instead of calling directly
-  this.onreadystatechange = s_ajaxListener.callback;
-};
-
-
-populateTwitterFeed();
+// Every 2.5 seconds, loop through and make sure all tweets have that tag.
+window.setInterval(function() {
+	populateTwitterFeed();
+}, 2500);
