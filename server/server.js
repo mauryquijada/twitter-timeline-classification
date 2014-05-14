@@ -2,7 +2,7 @@ var https = require('https');
 var fs = require('fs');
 var qs = require('querystring');
 
-var map = require('./map');
+var map = require('./interface');
 
 var options = {
 	key: fs.readFileSync('privatekey.pem'),

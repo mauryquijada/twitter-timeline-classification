@@ -6,10 +6,7 @@
 //
 // see also http://www.tartarus.org/~martin/PorterStemmer
 
-// Release 1 be 'andargor', Jul 2004
-// Release 2 (substantially revised) by Christopher McKenzie, Aug 2009
-
-var stemmer = (function(){
+function stem () {
 	var step2list = {
 			"ational" : "ate",
 			"tional" : "tion",
@@ -183,4 +180,6 @@ var stemmer = (function(){
 
 		return w;
 	}
-})();
+}
+
+exports.stem = stem

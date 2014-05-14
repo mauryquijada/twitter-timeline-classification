@@ -1,12 +1,11 @@
-var tweetParser = require('./parser');
+var som = require('./som')
+var parser = require('./parser');
 
 function train (tweet, callback) {
-	var parsed = tweetParser.parseTweet(tweet.text);
+	var parsed = parser.parseTweet(tweet.text);
 	console.log(parsed);
 
-
-	response = 'Hello, world!';
-	callback(200, response);
+	callback(200, 'OK');
 }
 
 function mapTweetList (tweets, callback) {
@@ -17,7 +16,6 @@ function mapTweetList (tweets, callback) {
 	});
 
 	callback(200, JSON.stringify(response));
-	console.log(response);
 }
 
 // Returns a relevance from 0 to 1.

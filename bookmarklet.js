@@ -11,7 +11,11 @@ link.href = "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css";
 link.media = "all";
 head.appendChild(link);
 
+// Send the training data to the server for processing.
 function processFeedback (action, tweet, icon, otherIcon) {
+    // Send the associated action along with the tweet.
+    tweet.action = action;
+
     // Make the change only if we haven't seen a vote cast before.
     var newClass = "fa fa-check";
     if (icon.className != newClass && otherIcon.className != newClass) {
@@ -39,6 +43,7 @@ function processFeedback (action, tweet, icon, otherIcon) {
     request.send("data=" + encodeURIComponent(JSON.stringify(tweet)));
 }
 
+// For a given list of tweets, determine their relevance and change their background.
 function determineRelevanceOfTweets (tweets) {
     if (tweets.length > 0) {
         var request = new XMLHttpRequest();
@@ -48,12 +53,17 @@ function determineRelevanceOfTweets (tweets) {
             if (request.readyState == 4 && request.status == 200) {
                 var response = JSON.parse(request.responseText);
                 response.forEach(function(item) {
-                    // If it's relevant, change the background color!
-                    if (parseFloat(item.relevance) > 0.5) {
-                        var selector = "[data-item-id='" + item.id + "']";
-                        var tweetNode = document.querySelector(selector);
-                        tweetNode.style.backgroundColor = "rgb(245, 255, 239)";
-                    }
+                    // Change the background color depending on its relevance.
+                    // Green is rgb(245, 255, 239) and Red is rgb(255, 214, 224).
+                    var red = Math.floor(255 - 10 * item.relevance);
+                    var green = Math.floor(214 + 41 * item.relevance);
+                    var blue = Math.floor(224 + 15 * item.relevance);
+
+                    var selector = "[data-item-id='" + item.id + "']";
+                    var tweetNode = document.querySelector(selector);
+                    tweetNode.style.backgroundColor =
+                        "rgb(" + red + ", " + green + ", " + blue + ")";
+
                 });
             }
         }
@@ -63,7 +73,10 @@ function determineRelevanceOfTweets (tweets) {
 
 function populateTwitterFeed () {
     // Create the new li elements that contain our upvote-downvote code.
-    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip upvote-link\" href=\"#\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip downvote-link\" href=\"#\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
+    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip upvote-link\"\
+    href=\"#\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b>\
+    </a></li><li><a role=\"button\" class=\"with-icn js-tooltip downvote-link\" href=\"#\">\
+    <i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
 
     // Prepare to iterate.
     var streamItems = document.getElementById("stream-items-id");
