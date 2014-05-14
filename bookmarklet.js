@@ -11,32 +11,14 @@ link.href = "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css";
 link.media = "all";
 head.appendChild(link);
 
-function processFeedback (obj, tweet) {
-    var target = obj;
-    alert(target);
-
-    // Decide what to do depending on whether the icon or link was clicked.
-    if (target.nodeName == "B") {
-        // Get the icon clicked on.
-        var icon = target.parentNode.children.item(0);
-    } else if (target.nodeName == "I") {
-        // Stay put.
-        var icon = target;
-    }
-
-    // Get the one we didn't click.
-    if (icon.className == "fa fa-thumbs-up") {
-        var otherIcon = target.parentNode.parentNode.nextSibling.firstChild.firstChild;
-    } else if (icon.className == "fa fa-thumbs-down") {
-        var otherIcon = target.parentNode.parentNode.previousSibling.firstChild.firstChild;
-    }
-
+function processFeedback (action, tweet, icon, otherIcon) {
     // Make the change only if we haven't seen a vote cast before.
     var newClass = "fa fa-check";
     if (icon.className != newClass && otherIcon.className != newClass) {
         icon.className = newClass;
     } else {
         alert("You've already cast your vote!");
+        return false;
     }
 
     // Otherwise, send it to the server and change the indication when we receive
@@ -44,7 +26,6 @@ function processFeedback (obj, tweet) {
     var request = new XMLHttpRequest();
     request.open("POST", SERVER + "/map", true);
     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    request.send("data=" + encodeURIComponent(JSON.stringify(tweet)));
     request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
              icon.className = newClass;
@@ -52,23 +33,22 @@ function processFeedback (obj, tweet) {
             icon.className = "fa fa-frown-o";
         }
     }
-    request.send();
+
+    request.send("data=" + encodeURIComponent(JSON.stringify(tweet)));
     
-    return false;
+    return true;
 }
 
 function populateTwitterFeed () {
     // Create the new li elements that contain our upvote-downvote code.
-    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip\" href=\"javascript:;\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
+    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip upvote-link\" href=\"#\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b></a></li><li><a role=\"button\" class=\"with-icn js-tooltip downvote-link\" href=\"#\"><i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
 
     // Prepare to iterate.
     var streamItems = document.getElementById("stream-items-id");
     var tweets = [];
 
     // Loop through each of the tweets displayed and display relevant information.
-    for (var i = 0; i < streamItems.children.length; i++) {
-        var listElementNode = streamItems.children.item(i);
-
+    Array.prototype.slice.call(streamItems.children).forEach(function (listElementNode) {
         // If we haven't already marked it...
         if (!listElementNode.hasAttribute("data-already-visited")) {
             var tweet = {};
@@ -93,22 +73,25 @@ function populateTwitterFeed () {
             var tweetActions = tweetContentNode.getElementsByClassName("tweet-actions").item(0);
             tweetActions.innerHTML = elements + tweetActions.innerHTML;
 
-            // Traverse to add the event listeners for when a vote is cast.
-            for (var j = 0; j < 2; j++) {
-                // Use a self-invoking closure to ensure tweets refers to the proper last element.
-                (function () {
-                    var voteLink = tweetActions.children.item(j).children.item(0);
-                    var tweetToPass = JSON.stringify(tweets.slice(-1).pop());
-    voteLink.addEventListener("click", function() {
-                        processFeedback(this, tweetToPass);
-                    });
-                }())
-            }
+            // Get the proper HTML nodes and add the proper event listeners.
+            var upvoteLink = tweetActions.getElementsByClassName("upvote-link")[0];
+            var upvoteIcon = tweetActions.getElementsByClassName("fa-thumbs-up")[0];
+            upvoteLink.addEventListener("click", function (e) {
+               processFeedback('upvote', tweet, upvoteIcon, downvoteIcon);
+               e.preventDefault();
+            });
+
+            var downvoteLink = tweetActions.getElementsByClassName("downvote-link")[0];
+            var downvoteIcon = tweetActions.getElementsByClassName("fa-thumbs-down")[0];
+            downvoteLink.addEventListener("click", function (e) {
+               processFeedback('downvote', tweet, downvoteIcon, upvoteIcon);
+               e.preventDefault();
+            });
 
             // TODO: Run the element through the self-organizing map and change its background.
             if (Math.random() > 0.5) listElementNode.style.backgroundColor = "rgb(245, 255, 239)";
         }
-    }
+    });
 }
 
 // Every 2.5 seconds, loop through and make sure all tweets have that tag.

@@ -12,22 +12,15 @@ var options = {
 https.createServer(options, function (req, res) {
 	// Capture the origin to enable CORS.
 	var origin = (req.headers.origin || '*');
-	console.log("origin is: " + origin);
 
-	// Send the appropriate header if the browser is making a security check.
-	if (req.method.toUpperCase() === 'OPTIONS') {
-		console.log('Browser security check!');
-		res.writeHead('204', 'No Content',
-		{
-			'access-control-allow-origin': origin,
-			'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-			'access-control-allow-headers': 'content-type, accept',
-			'access-control-max-age': 10, // Seconds.
-			'content-length': 0
-		}
-		);
+	// Send the appropriate header to enable cross-site scripting.
+	res.setHeader('Content-Type', 'text/plain');
+	res.setHeader('Access-Control-Allow-Origin', origin);
 
-		return res.end();
+	// Function to return the proper response.
+	function returnResponse (code, response) {
+		res.writeHead(code);
+		res.end(response);
 	}
 
 	// Function to handle POST data.
@@ -38,41 +31,46 @@ https.createServer(options, function (req, res) {
         });
 
         req.on('end', function () {
-        	console.log(body);
-        	var tweet = qs.parse(body).data;
-			fn(tweet, res, origin);
+        	// Parse the input into JSON format.
+        	var tweet = JSON.parse(qs.parse(body).data);
+			fn(tweet, returnResponse);
         });
 	}
 
 	// Route the request based on what's being asked of us.
 	switch (req.url) {
 		case '/map':
+			// Log it.
 			console.log('We hit the map page!');
 
+			// Only take care of it if it's a POST request.
 			if (req.method == 'POST') {
 				handlePostData(map.map);
 			} else {
-        		res.writeHead(405, {'Content-Type': 'text/plain', 'access-control-allow-origin': origin});
-        		res.end();
+        		return returnResponse(405, 'Invalid URL.');
     		}
 			
-			
-			break;
+    		break;
 		case '/train':
+			// Log it.
 			console.log('We hit the train page!');
-			res.writeHead(200);
+
+			// Only take care of it if it's a POST request. 
 			if (req.method == 'POST') {
 				handlePostData(map.train);
 			} else {
-        		res.writeHead(405, {'Content-Type': 'text/plain', 'access-control-allow-origin': origin});
-        		res.end();
+        		return returnResponse(405, 'Invalid URL.');
     		}
 
-			break;
+    		break;
 		default:
-			console.log('Unrecognized URL ' + req.url);
-			res.writeHead(400, {'Content-Type': 'text/plain', 'access-control-allow-origin': origin});
-			res.end('Unrecognized URL ' + req.url);
+			// Log it and return as unrecognized.
+			var text = 'Unrecognized URL: ' + req.url;
+			console.log(text);
+
+			returnResponse(400, text);
+			break;
+			
 	}
 }).listen(1337, '127.0.0.1');
 

@@ -1,18 +1,15 @@
 var tweetParser = require('./parser');
 
-function train (tweet, response) {
-	response.writeHead(200);
-	response.end('hai');
-
-	return true;
+function train (tweet, callback) {
+	response = 'Hello, world!';
+	callback(200, response);
 }
 
-function map (tweet, response, origin) {
+function map (tweet, callback) {
 	//var result = tweetParser.parseTweet(tweet.text);
-
-	response.writeHead(200, {'Content-Type': 'text/plain', 'access-control-allow-origin': origin});
-	response.end("hai");
-	return true;
+	console.log(tweet['text']);
+	response = 'Hello, world!';
+	callback(200, response);
 }
 
 exports.train = train;
