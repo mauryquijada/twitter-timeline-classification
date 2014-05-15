@@ -2,7 +2,7 @@ var https = require('https');
 var fs = require('fs');
 var qs = require('querystring');
 
-var map = require('./interface');
+var handler = require('./handler');
 
 var options = {
 	key: fs.readFileSync('privatekey.pem'),
@@ -41,11 +41,11 @@ https.createServer(options, function (req, res) {
 	switch (req.url) {
 		case '/map':
 			// Log it.
-			console.log('We hit the map page!');
+			console.log('Received classification request.');
 
 			// Only take care of it if it's a POST request.
 			if (req.method == 'POST') {
-				handlePostData(map.map);
+				handlePostData(handler.map);
 			} else {
         		return returnResponse(405, 'Invalid URL.');
     		}
@@ -53,11 +53,11 @@ https.createServer(options, function (req, res) {
     		break;
 		case '/train':
 			// Log it.
-			console.log('We hit the train page!');
+			console.log('Received training request.');
 
 			// Only take care of it if it's a POST request. 
 			if (req.method == 'POST') {
-				handlePostData(map.train);
+				handlePostData(handler.train);
 			} else {
         		return returnResponse(405, 'Invalid URL.');
     		}
@@ -72,6 +72,6 @@ https.createServer(options, function (req, res) {
 			break;
 			
 	}
-}).listen(1337, '127.0.0.1');
+}).listen(47474);
 
-console.log('Server running at https://127.0.0.1:1337/');
+console.log('Server running at https://127.0.0.1:47474/');

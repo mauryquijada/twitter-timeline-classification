@@ -1,5 +1,5 @@
 // Initialize configuration variables.
-var SERVER = "https://127.0.0.1:1337";
+var SERVER = "https://cs.hmc.edu:47474";
 
 // Insert the glyphicons stylesheet.
 var head = document.getElementsByTagName("head")[0];
@@ -54,16 +54,19 @@ function determineRelevanceOfTweets (tweets) {
                 var response = JSON.parse(request.responseText);
                 response.forEach(function(item) {
                     // Change the background color depending on its relevance.
-                    // Green is rgb(245, 255, 239) and Red is rgb(255, 214, 224).
-                    var red = Math.floor(255 - 10 * item.relevance);
-                    var green = Math.floor(214 + 41 * item.relevance);
-                    var blue = Math.floor(224 + 15 * item.relevance);
-
                     var selector = "[data-item-id='" + item.id + "']";
                     var tweetNode = document.querySelector(selector);
-                    tweetNode.style.backgroundColor =
-                        "rgb(" + red + ", " + green + ", " + blue + ")";
 
+                    switch (item.result) {
+                        case 'up':
+                            tweetNode.style.backgroundColor = "rgb(245, 255, 239)";
+                            break;
+                        case 'down':
+                            tweetNode.style.backgroundColor = "rgb(255, 214, 224)";
+                            break;
+                        case 'none':
+                            break;
+                    }
                 });
             }
         }
@@ -113,14 +116,14 @@ function populateTwitterFeed () {
             var upvoteIcon = tweetActions.getElementsByClassName("fa-thumbs-up")[0];
             upvoteLink.addEventListener("click", function (e) {
                e.preventDefault();
-               processFeedback("upvote", tweet, upvoteIcon, downvoteIcon);
+               processFeedback("up", tweet, upvoteIcon, downvoteIcon);
             });
 
             var downvoteLink = tweetActions.getElementsByClassName("downvote-link")[0];
             var downvoteIcon = tweetActions.getElementsByClassName("fa-thumbs-down")[0];
             downvoteLink.addEventListener("click", function (e) {
                e.preventDefault();
-               processFeedback("downvote", tweet, downvoteIcon, upvoteIcon);
+               processFeedback("down", tweet, downvoteIcon, upvoteIcon);
             });
         }
     });
@@ -128,6 +131,8 @@ function populateTwitterFeed () {
     // Send all of the unseen tweets to the server to determine relevance.
     determineRelevanceOfTweets(tweets);
 }
+
+populateTwitterFeed();
 
 // Every 2.5 seconds, loop through and make sure all tweets have that tag.
 window.setInterval(function () {

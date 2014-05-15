@@ -2,7 +2,7 @@
 // som plug-in. Replaces feature and feature vectors with _word_ vectors.
 // Written specifically to work with the Twitter Recommendation Engine.
 
-// Define the class representing the nodes on the self-organizng map.
+// Define the class representing the nodes on the self-organizing map.
 var Node = function (config) {
 	this.neighbors = {};
 
@@ -182,6 +182,11 @@ Som.prototype.train = function (label, vector) {
 				influence = 1;
 			}
 
+			// Negate the influence depending on whether the labels should be the same.
+			if(node.label != label) {
+				influence *= -1;
+			}
+
 			// Adjust the feature weight in the node according to the feature weight in the training set.
 			for (var feature in that.features) {
 				var featureIndex = that.features[feature];
@@ -201,20 +206,19 @@ Som.prototype.bestMatchingUnit = function (vector, label) {
 
 	var smallestDistance = 1e8;
 
+	//console.log(vector);
+
+	// Now, find out the weight vector!
+	var weights = [];
+	for (var feature in vector) {
+		weights[that.features[feature]] = vector[feature] || 0;
+	}
+
 	// Iterate through every node and keep track of the closest one!
 	this.nodeList.forEach(function (node) {
-		var weights = [];
-
-		// Now, find out the weight vector!
-		console.log("\nWeights for best matching unit.");
-		for (var feature in vector) {
-			weights[that.features[feature]] = vector[feature] || 0;
-		}
-		console.log(weights);
-
 		var distance = that.distanceFunction(node.weights, weights);
 
-		if (distance < smallestDistance && (label === undefined || node.label === label)) {
+		if (distance < smallestDistance && (label == undefined || node.label == label)) {
 			smallestDistance = distance;
 			bestMatchingUnit = node;
 		}
@@ -225,7 +229,6 @@ Som.prototype.bestMatchingUnit = function (vector, label) {
 
 Som.prototype.classify = function (vector) {
 	var bestMatchingUnit = this.bestMatchingUnit(vector);
-
 	return bestMatchingUnit.label;
 };
 
