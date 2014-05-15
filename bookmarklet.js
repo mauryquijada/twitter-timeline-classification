@@ -22,7 +22,7 @@ function processFeedback (action, tweet, icon, otherIcon) {
     if (icon.className != newClass && otherIcon.className != newClass) {
         icon.className = newClass;
     } else {
-        alert("You've already cast your vote!");
+        alert("You have already cast your vote!");
         return false;
     }
 
@@ -39,7 +39,7 @@ function processFeedback (action, tweet, icon, otherIcon) {
             icon.className = "fa fa-frown-o";
             return false;
         }
-    }
+    };
 
     request.send("user=" + encodeURIComponent(USER) + "&data=" + encodeURIComponent(JSON.stringify(tweet)));
 }
@@ -59,28 +59,28 @@ function determineRelevanceOfTweets (tweets) {
                     var tweetNode = document.querySelector(selector);
 
                     switch (item.result) {
-                        case 'up':
+                        case "up":
                             tweetNode.style.backgroundColor = "rgb(245, 255, 239)";
                             break;
-                        case 'down':
+                        case "down":
                             tweetNode.style.backgroundColor = "rgb(255, 214, 224)";
                             break;
-                        case 'none':
+                        case "none":
                             break;
                     }
                 });
             }
-        }
+        };
         request.send("user=" + encodeURIComponent(USER) + "&data=" + encodeURIComponent(JSON.stringify(tweets)));
     }
 }
 
 function populateTwitterFeed () {
     // Create the new li elements that contain our upvote-downvote code.
-    var elements = "<li><a role=\"button\" class=\"with-icn js-tooltip upvote-link\"\
-    href=\"#\"><i class=\"fa fa-thumbs-up\" style=\"margin-right: 7px;\"></i><b>Up</b>\
-    </a></li><li><a role=\"button\" class=\"with-icn js-tooltip downvote-link\" href=\"#\">\
-    <i class=\"fa fa-thumbs-down\" style=\"margin-right: 7px;\"></i><b>Down</b></a></li>";
+    var elements = "<li><a role='button' class='with-icn js-tooltip upvote-link'\
+    href='#'><i class='fa fa-thumbs-up' style='margin-right: 7px;'></i><b>Up</b>\
+    </a></li><li><a role='button' class='with-icn js-tooltip downvote-link' href='#'>\
+    <i class='fa fa-thumbs-down' style='margin-right: 7px;'></i><b>Down</b></a></li>";
 
     // Prepare to iterate.
     var streamItems = document.getElementById("stream-items-id");

@@ -1,4 +1,3 @@
-// Inspiration from http://ravikiranj.net/drupal/201205/code/machine-learning/how-build-twitter-sentiment-analyzer
 var fs = require('fs');
 var stemmer = require('./stemmer');
 var STOPWORDS = JSON.parse(fs.readFileSync('stopwords.json', 'ascii'));

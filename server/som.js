@@ -67,7 +67,7 @@ var Som = function (givenConfig) {
 	this.distanceFunction = config.distanceFunction || euclideanDistance;
 	this.initialRadius = config.initialRadius || max(this.width, this.height) / 2;
 	this.iterationCount = config.iterationCount;
-	this.initialLearningRate = config.initialLearningRate || 0.3;
+	this.initialLearningRate = config.initialLearningRate || 0.1;
 	this.precision = Math.pow(10, config.precision) || Math.pow(10, (Math.ceil(Math.log(this.somSize) / Math.LN10) + 2));
 	this.scale = config.scale || 1;
 
@@ -205,8 +205,6 @@ Som.prototype.bestMatchingUnit = function (vector, label) {
 	var bestMatchingUnit = this.nodeList[0];
 
 	var smallestDistance = 1e8;
-
-	//console.log(vector);
 
 	// Now, find out the weight vector!
 	var weights = [];

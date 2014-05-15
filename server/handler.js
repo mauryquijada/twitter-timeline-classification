@@ -1,4 +1,4 @@
-var som = require('./som').create({iterationCount: 500, width: 25, height: 25});
+var som = require('./som').create({iterationCount: 500});
 som.init({});
 var parser = require('./parser');
 
