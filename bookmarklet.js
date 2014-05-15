@@ -1,5 +1,6 @@
 // Initialize configuration variables.
 var SERVER = "https://cs.hmc.edu:47474";
+var USER = "mauryquijada";
 
 // Insert the glyphicons stylesheet.
 var head = document.getElementsByTagName("head")[0];
@@ -40,7 +41,7 @@ function processFeedback (action, tweet, icon, otherIcon) {
         }
     }
 
-    request.send("data=" + encodeURIComponent(JSON.stringify(tweet)));
+    request.send("user=" + encodeURIComponent(USER) + "&data=" + encodeURIComponent(JSON.stringify(tweet)));
 }
 
 // For a given list of tweets, determine their relevance and change their background.
@@ -70,7 +71,7 @@ function determineRelevanceOfTweets (tweets) {
                 });
             }
         }
-        request.send("data=" + encodeURIComponent(JSON.stringify(tweets)));
+        request.send("user=" + encodeURIComponent(USER) + "&data=" + encodeURIComponent(JSON.stringify(tweets)));
     }
 }
 
