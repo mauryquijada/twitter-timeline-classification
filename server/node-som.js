@@ -69,6 +69,8 @@ var Som = function(_config)
 
 var Node = function(_config)
 {
+	console.log(_config);
+
 	this.neighbors = {};
 	
 	if (!_config.weights)
@@ -78,9 +80,9 @@ var Node = function(_config)
 
 	this.weights = _config.weights;
 	
-	this.i = _config.i;
-	this.x = _config.x;
-	this.y = _config.y;
+	this.i = _config.ii;
+	this.x = _config.xx;
+	this.y = _config.yy;
 };
 
 Node.prototype.add = function(_id, _vector, _category)
